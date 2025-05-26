@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
 
+# Add permissions block
+permissions:
+  contents: write  # Required for creating releases
+  packages: write  # Required for creating packages
+
 jobs:
   test:
     runs-on: ubuntu-latest
