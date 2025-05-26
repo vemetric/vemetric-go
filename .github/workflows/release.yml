@@ -48,9 +48,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         name: Release ${{ env.VERSION }}
-        body: |
-          Changes in this Release
-          ${{ github.event.head_commit.message }}
         draft: false
         prerelease: false
         files: |
