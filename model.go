@@ -3,7 +3,7 @@ package vemetric
 type TrackEventOpts struct {
 	EventName      string                 `json:"name"`
 	UserIdentifier string                 `json:"userIdentifier,omitempty"`
-	EventData      map[string]any         `json:"eventData,omitempty"`
+	EventData      map[string]any         `json:"customData,omitempty"`
 	UserData       UserData               `json:"userData,omitempty"`
 }
 
