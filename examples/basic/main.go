@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Vemetric/vemetric-go/vemetric"
+	"github.com/Vemetric/vemetric-go"
 )
 
 func main() {
