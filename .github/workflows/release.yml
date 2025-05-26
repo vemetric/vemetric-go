@@ -57,4 +57,4 @@ jobs:
 
     - name: Create archive
       run: |
-        tar -czf vemetric-go-${{ env.VERSION }}.tar.gz ./ 
+        rm -r examples/ && tar -czf vemetric-go-${{ env.VERSION }}.tar.gz ./ 
