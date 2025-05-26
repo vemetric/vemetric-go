@@ -1,2 +1,73 @@
-# vemetric-go
-Offical Go SDK for Vemetric
+# The Vemetric SDK for Go
+
+Learn more about the Vemetric Go SDK in the [official docs](https://vemetric.com/docs/sdks/go).
+
+## Installation
+
+```bash
+go get github.com/Vemetric/vemetric-go
+```
+
+## Usage
+
+```go
+package main
+
+import (
+	"log"
+
+	"github.com/Vemetric/vemetric-go"
+)
+
+func main() {
+	client, err := vemetric.New(&vemetric.Opts{
+		Token: "YOUR_PROJECT_TOKEN",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Track an event
+	err = client.TrackEvent(&vemetric.TrackEventOpts{
+		EventName:      "SignupCompleted",
+		UserIdentifier: "user123",
+		EventData: map[string]any{
+			"plan": "Pro",
+		},
+		UserData: vemetric.UserData{
+			Set: map[string]any{"plan": "Business"},
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Update the data of a user
+	err = client.UpdateUser(&vemetric.UpdateUserOpts{
+		UserIdentifier: "user123",
+		UserData: vemetric.UserData{
+			Set: map[string]any{"plan": "Business"},
+		},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+```
+
+## Configuration
+
+The client can be configured with the following options:
+
+```go
+client, err := vemetric.New(&vemetric.Opts{
+	Token:   "YOUR_PROJECT_TOKEN", // Required
+	Host:    "https://hub.vemetric.com", // Optional, defaults to https://hub.vemetric.com
+	Timeout: 3 * time.Second, // Optional, defaults to 3 seconds
+	Context: context.Background(), // Optional, defaults to context.Background()
+})
+```
+
+## Documentation
+
+For more information, visit [vemetric.com/docs](https://vemetric.com/docs).

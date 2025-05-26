@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Test
+      run: go test -v ./...
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Get version from tag
+      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+    - name: Update version in code
+      run: |
+        sed -i "s/var version = \".*\"/var version = \"${VERSION#v}\"/" vemetric/client.go
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        name: Release ${{ env.VERSION }}
+        body: |
+          Changes in this Release
+          ${{ github.event.head_commit.message }}
+        draft: false
+        prerelease: false
+        files: |
+          vemetric-go-${{ env.VERSION }}.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create archive
+      run: |
+        tar -czf vemetric-go-${{ env.VERSION }}.tar.gz vemetric/ 
