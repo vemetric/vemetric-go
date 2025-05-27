@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var version = "dev" // This will be overridden by build flags
+var version = "v0.0.5" // This will be overridden by build flags
 
 type Client struct {
 	token  string
