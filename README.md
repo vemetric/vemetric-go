@@ -31,13 +31,10 @@ func main() {
 
 	// Track an event
 	err = client.TrackEvent(&vemetric.TrackEventOpts{
-		EventName:      "SignupCompleted",
-		UserIdentifier: "user123",
+		EventName: "SignupCompleted",
+		UserIdentifier: "user-id",
 		EventData: map[string]any{
-			"plan": "Pro",
-		},
-		UserData: vemetric.UserData{
-			Set: map[string]any{"plan": "Business"},
+			"key": "value",
 		},
 	})
 	if err != nil {
@@ -46,9 +43,11 @@ func main() {
 
 	// Update the data of a user
 	err = client.UpdateUser(&vemetric.UpdateUserOpts{
-		UserIdentifier: "user123",
+		UserIdentifier: "user-id",
 		UserData: vemetric.UserData{
-			Set: map[string]any{"plan": "Business"},
+			Set: map[string]any{"key1": "value1"},
+			SetOnce: map[string]any{"key2": "value2"},
+			Unset: []string{"key3"},
 		},
 	})
 	if err != nil {
@@ -69,7 +68,3 @@ client, err := vemetric.New(&vemetric.Opts{
 	Context: context.Background(), // Optional, defaults to context.Background()
 })
 ```
-
-## Documentation
-
-For more information, visit [vemetric.com/docs](https://vemetric.com/docs).
