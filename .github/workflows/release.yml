@@ -1,9 +1,12 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.0.1)'
+        required: true
+        type: string
 
 # Add permissions block
 permissions:
@@ -37,30 +40,33 @@ jobs:
       with:
         go-version: '1.21'
 
-    - name: Get version from tag
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+    - name: Configure Git
+      run: |
+        git config --global user.name 'GitHub Actions'
+        git config --global user.email 'github-actions@github.com'
 
     - name: Update version in code
       run: |
         echo "Current version in file:"
         grep "var version" client.go
-        echo "Updating to version: ${VERSION#v}"
-        sed -i.bak "s/var version = \".*\"/var version = \"${VERSION#v}\"/" client.go
+        echo "Updating to version: ${{ github.event.inputs.version }}"
+        sed -i.bak "s/var version = \".*\"/var version = \"${{ github.event.inputs.version }}\"/" client.go
         echo "Updated version in file:"
         grep "var version" client.go
         rm client.go.bak
 
-    - name: Create archive
+    - name: Commit and push changes
       run: |
-        tar -czf vemetric-go-${{ env.VERSION }}.tar.gz *.go go.mod README.md
+        git add client.go
+        git commit -m "chore: bump version to ${{ github.event.inputs.version }}"
+        git push origin main
 
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        name: Release ${{ env.VERSION }}
+        tag_name: v${{ github.event.inputs.version }}
+        name: v${{ github.event.inputs.version }}
         draft: false
         prerelease: false
-        files: |
-          vemetric-go-${{ env.VERSION }}.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
