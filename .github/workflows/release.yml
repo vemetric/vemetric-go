@@ -4,69 +4,74 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to release (e.g., 0.0.1)'
+        description: "Version to release (e.g., 0.0.1)"
+        required: true
+        type: string
+      message:
+        description: "Message to include in the release"
         required: true
         type: string
 
 # Add permissions block
 permissions:
-  contents: write  # Required for creating releases
-  packages: write  # Required for creating packages
+  contents: write # Required for creating releases
+  packages: write # Required for creating packages
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
 
-    - name: Test
-      run: go test -v ./...
+      - name: Test
+        run: go test -v ./...
 
   release:
     needs: test
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.21'
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
 
-    - name: Configure Git
-      run: |
-        git config --global user.name 'GitHub Actions'
-        git config --global user.email 'github-actions@github.com'
+      - name: Configure Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
 
-    - name: Update version in code
-      run: |
-        echo "Current version in file:"
-        grep "var version" client.go
-        echo "Updating to version: ${{ github.event.inputs.version }}"
-        sed -i.bak "s/var version = \".*\"/var version = \"${{ github.event.inputs.version }}\"/" client.go
-        echo "Updated version in file:"
-        grep "var version" client.go
-        rm client.go.bak
+      - name: Update version in code
+        run: |
+          echo "Current version in file:"
+          grep "var version" client.go
+          echo "Updating to version: ${{ github.event.inputs.version }}"
+          sed -i.bak "s/var version = \".*\"/var version = \"${{ github.event.inputs.version }}\"/" client.go
+          echo "Updated version in file:"
+          grep "var version" client.go
+          rm client.go.bak
 
-    - name: Commit and push changes
-      run: |
-        git add client.go
-        git commit -m "chore: bump version to ${{ github.event.inputs.version }}"
-        git push origin main
+      - name: Commit and push changes
+        run: |
+          git add client.go
+          git commit -m "chore: bump version to ${{ github.event.inputs.version }}"
+          git push origin main
 
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        tag_name: v${{ github.event.inputs.version }}
-        name: v${{ github.event.inputs.version }}
-        draft: false
-        prerelease: false
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+          body: ${{ github.event.inputs.message }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
