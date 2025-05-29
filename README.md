@@ -6,6 +6,8 @@ Learn more about the Vemetric Go SDK in the [official docs](https://vemetric.com
 
 You can also checkout the package on the [Go Package Registry](https://pkg.go.dev/github.com/Vemetric/vemetric-go).
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/Vemetric/vemetric-go.svg)](https://pkg.go.dev/github.com/Vemetric/vemetric-go)
+
 ## Installation
 
 ```bash

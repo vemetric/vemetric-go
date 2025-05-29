@@ -9,7 +9,7 @@ import (
 func main() {
 	client, err := vemetric.New(&vemetric.Opts{
 		Token: "WRlW37cPSLUAbXDk76wYU",
-		Host: "http://localhost:4004",
+		Host: "http://localhost:4004", // Host is optional. If not provided, defaults to "https://hub.vemetric.com"
 	})
 	if err != nil {
 		log.Fatal(err)

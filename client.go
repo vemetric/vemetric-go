@@ -10,17 +10,18 @@ import (
 	"time"
 )
 
-var version = "0.0.7" // This will be overridden by build flags
+var version = "0.0.7" // This gets changed automatically during the release process
 
-type Client struct {
+type client struct {
 	token  string
 	host   string
 	hc     *http.Client
 	ctx    context.Context
 }
 
-// Opts lets callers override host or timeout.
+// Configuration options for the Vemetric Client.
 type Opts struct {
+	// Required. This is the token of your project. You can find it in the Settings page.
 	Token   string
 	// Host is optional. If not provided, defaults to "https://hub.vemetric.com"
 	Host    string
@@ -33,8 +34,8 @@ var (
 	ErrBadStatus = errors.New("vemetric: non-2xx status code")
 )
 
-// New returns a ready client.
-func New(o *Opts) (*Client, error) {
+// New returns a new Vemetric client.
+func New(o *Opts) (*client, error) {
 	if o == nil || o.Token == "" {
 		return nil, errors.New("vemetric: Token required")
 	}
@@ -54,7 +55,7 @@ func New(o *Opts) (*Client, error) {
 		ctx = o.Context
 	}
 
-	return &Client{
+	return &client{
 		token: o.Token,
 		host:  host,
 		hc: &http.Client{
@@ -64,7 +65,8 @@ func New(o *Opts) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) TrackEvent(opts *TrackEventOpts) error {
+// Tracks a custom event for the user with the given identifier.
+func (c *client) TrackEvent(opts *TrackEventOpts) error {
 	if opts == nil || opts.EventName == "" {
 		return errors.New("vemetric: event name required")
 	}
@@ -72,7 +74,8 @@ func (c *Client) TrackEvent(opts *TrackEventOpts) error {
 	return c.post("/e", opts)
 }
 
-func (c *Client) UpdateUser(opts *UpdateUserOpts) error {
+// Updates the data of the user with the given identifier.
+func (c *client) UpdateUser(opts *UpdateUserOpts) error {
 	if opts == nil || opts.UserIdentifier == "" {
 		return errors.New("vemetric: user identifier required")
 	}
@@ -80,7 +83,7 @@ func (c *Client) UpdateUser(opts *UpdateUserOpts) error {
 	return c.post("/u", opts)
 }
 
-func (c *Client) post(path string, body any) error {
+func (c *client) post(path string, body any) error {
 	b, err := json.Marshal(body)
 	if err != nil {
 		return err
