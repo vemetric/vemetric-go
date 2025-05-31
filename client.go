@@ -16,7 +16,6 @@ type client struct {
 	token  string
 	host   string
 	hc     *http.Client
-	ctx    context.Context
 }
 
 // Configuration options for the Vemetric Client.
@@ -27,7 +26,6 @@ type Opts struct {
 	Host    string
 	// Default timeout is 3 seconds.
 	Timeout time.Duration
-	Context context.Context
 }
 
 var (
@@ -50,47 +48,41 @@ func New(o *Opts) (*client, error) {
 		timeout = o.Timeout
 	}
 
-	ctx := context.Background()
-	if o.Context != nil {
-		ctx = o.Context
-	}
-
 	return &client{
 		token: o.Token,
 		host:  host,
 		hc: &http.Client{
 			Timeout: timeout,
 		},
-		ctx: ctx,
 	}, nil
 }
 
 // Tracks a custom event for the user with the given identifier.
-func (c *client) TrackEvent(opts *TrackEventOpts) error {
+func (c *client) TrackEvent(ctx context.Context, opts *TrackEventOpts) error {
 	if opts == nil || opts.EventName == "" {
 		return errors.New("vemetric: event name required")
 	}
 
-	return c.post("/e", opts)
+	return c.post(ctx, "/e", opts)
 }
 
 // Updates the data of the user with the given identifier.
-func (c *client) UpdateUser(opts *UpdateUserOpts) error {
+func (c *client) UpdateUser(ctx context.Context, opts *UpdateUserOpts) error {
 	if opts == nil || opts.UserIdentifier == "" {
 		return errors.New("vemetric: user identifier required")
 	}
 
-	return c.post("/u", opts)
+	return c.post(ctx, "/u", opts)
 }
 
-func (c *client) post(path string, body any) error {
+func (c *client) post(ctx context.Context, path string, body any) error {
 	b, err := json.Marshal(body)
 	if err != nil {
 		return err
 	}
 
 	url := fmt.Sprintf("%s%s", c.host, path)
-	httpReq, err := http.NewRequestWithContext(c.ctx, http.MethodPost, url, bytes.NewReader(b))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))
 	if err != nil {
 		return err
 	}

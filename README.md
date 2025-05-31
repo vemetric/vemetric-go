@@ -20,6 +20,7 @@ go get github.com/Vemetric/vemetric-go
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/Vemetric/vemetric-go"
@@ -33,8 +34,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
+
 	// Track an event
-	err = client.TrackEvent(&vemetric.TrackEventOpts{
+	err = client.TrackEvent(ctx, &vemetric.TrackEventOpts{
 		EventName: "SignupCompleted",
 		UserIdentifier: "user-id",
 		EventData: map[string]any{
@@ -46,7 +49,7 @@ func main() {
 	}
 
 	// Update the data of a user
-	err = client.UpdateUser(&vemetric.UpdateUserOpts{
+	err = client.UpdateUser(ctx, &vemetric.UpdateUserOpts{
 		UserIdentifier: "user-id",
 		UserData: vemetric.UserData{
 			Set: map[string]any{"key1": "value1"},
@@ -69,6 +72,5 @@ client, err := vemetric.New(&vemetric.Opts{
 	Token:   "YOUR_PROJECT_TOKEN", // Required
 	Host:    "https://hub.vemetric.com", // Optional, defaults to https://hub.vemetric.com
 	Timeout: 3 * time.Second, // Optional, defaults to 3 seconds
-	Context: context.Background(), // Optional, defaults to context.Background()
 })
 ```

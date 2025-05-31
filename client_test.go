@@ -127,7 +127,8 @@ func TestTrackEvent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := client.TrackEvent(tt.opts)
+			ctx := context.Background()
+			err := client.TrackEvent(ctx, tt.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("TrackEvent() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -198,7 +199,8 @@ func TestUpdateUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := client.UpdateUser(tt.opts)
+			ctx := context.Background()
+			err := client.UpdateUser(ctx, tt.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("UpdateUser() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -214,21 +216,20 @@ func TestContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	ctx, cancel := context.WithCancel(context.Background())
 	client, err := New(&Opts{
 		Token:   "test-token",
 		Host:    server.URL,
-		Context: ctx,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
 
+	ctx, cancel := context.WithCancel(context.Background())
 	// Cancel the context immediately
 	cancel()
 
 	// Try to track an event
-	err = client.TrackEvent(&TrackEventOpts{
+	err = client.TrackEvent(ctx, &TrackEventOpts{
 		EventName: "test-event",
 	})
 	if err == nil {

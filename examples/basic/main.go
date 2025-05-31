@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/Vemetric/vemetric-go"
@@ -8,15 +9,17 @@ import (
 
 func main() {
 	client, err := vemetric.New(&vemetric.Opts{
-		Token: "WRlW37cPSLUAbXDk76wYU",
+		Token: "o1rySsGlUtFCyflo",
 		Host: "http://localhost:4004", // Host is optional. If not provided, defaults to "https://hub.vemetric.com"
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	ctx := context.Background()
+
 	// Track an event
-	err = client.TrackEvent(&vemetric.TrackEventOpts{
+	err = client.TrackEvent(ctx, &vemetric.TrackEventOpts{
 		EventName: "SignupCompleted",
 		UserIdentifier: "dmmIrnzUzVMJD03tjCiHXTEEgX6xIPJm",
 		EventData: map[string]any{
@@ -28,7 +31,7 @@ func main() {
 	}
 
 	// Update user
-	err = client.UpdateUser(&vemetric.UpdateUserOpts{
+	err = client.UpdateUser(ctx, &vemetric.UpdateUserOpts{
 		UserIdentifier: "dmmIrnzUzVMJD03tjCiHXTEEgX6xIPJm",
 		UserData: vemetric.UserData{
 			Set: map[string]any{"plan": "BusinessGo"},
