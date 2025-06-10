@@ -112,8 +112,8 @@ func TestTrackEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nil options",
-			opts: nil,
+			name:    "nil options",
+			opts:    nil,
 			wantErr: true,
 		},
 		{
@@ -217,8 +217,8 @@ func TestContextCancellation(t *testing.T) {
 	defer server.Close()
 
 	client, err := New(&Opts{
-		Token:   "test-token",
-		Host:    server.URL,
+		Token: "test-token",
+		Host:  server.URL,
 	})
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
@@ -235,4 +235,4 @@ func TestContextCancellation(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error due to cancelled context, got nil")
 	}
-} 
+}
