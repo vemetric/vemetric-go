@@ -38,6 +38,8 @@ type Opts struct {
 	Timeout time.Duration
 	// Default is false.
 	Async bool
+	// Default is 10. Async buffered channel size
+	AsyncBufferedChannelSize int
 }
 
 var (
@@ -60,6 +62,12 @@ func New(o *Opts) (*client, error) {
 		timeout = o.Timeout
 	}
 
+	asyncBufferedChannelSize := o.AsyncBufferedChannelSize
+
+	if o.Async && asyncBufferedChannelSize == 0 {
+		asyncBufferedChannelSize = 10
+	}
+
 	c := &client{
 		token: o.Token,
 		host:  host,
@@ -67,7 +75,7 @@ func New(o *Opts) (*client, error) {
 			Timeout: timeout,
 		},
 		async: o.Async,
-		q:     make(chan request, 1000),
+		q:     make(chan request, asyncBufferedChannelSize),
 		wg:    sync.WaitGroup{},
 	}
 
@@ -88,12 +96,9 @@ func (c *client) TrackEvent(ctx context.Context, opts *TrackEventOpts) error {
 		return c.post(ctx, "/e", opts)
 	}
 
-	select {
-	case c.q <- request{ctx: ctx, path: "/e", body: opts}:
-		return nil
-	default:
-		return errors.New("vemetric: event dropped, queue full")
-	}
+	c.q <- request{ctx: ctx, path: "/e", body: opts}
+
+	return nil
 }
 
 // Updates the data of the user with the given identifier.
@@ -106,12 +111,9 @@ func (c *client) UpdateUser(ctx context.Context, opts *UpdateUserOpts) error {
 		return c.post(ctx, "/u", opts)
 	}
 
-	select {
-	case c.q <- request{ctx: ctx, path: "/u", body: opts}:
-		return nil
-	default:
-		return errors.New("vemetric: update dropped, queue full")
-	}
+	c.q <- request{ctx: ctx, path: "/u", body: opts}
+
+	return nil
 }
 
 func (c *client) Close() {
@@ -154,7 +156,7 @@ func (c *client) worker() {
 	defer c.wg.Done()
 
 	for request := range c.q {
-		ctx, cancel := context.WithTimeout(request.ctx, 3*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 		_ = c.post(ctx, request.path, request.body)
 
