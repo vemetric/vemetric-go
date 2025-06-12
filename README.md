@@ -72,5 +72,7 @@ client, err := vemetric.New(&vemetric.Opts{
 	Token:   "YOUR_PROJECT_TOKEN", // Required
 	Host:    "https://hub.vemetric.com", // Optional, defaults to https://hub.vemetric.com
 	Timeout: 3 * time.Second, // Optional, defaults to 3 seconds
+	Async: false, // Optional, defaults to false, configures if the requests should be fired asynchronously
+	AsyncBufferedChannelSize: 10, // Optional, defaults to 10
 })
 ```
