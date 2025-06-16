@@ -1,3 +1,3 @@
-module github.com/Vemetric/vemetric-go
+module github.com/vemetric/vemetric-go
 
 go 1.23

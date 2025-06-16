@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/Vemetric/vemetric-go"
+	"github.com/vemetric/vemetric-go"
 )
 
 func main() {

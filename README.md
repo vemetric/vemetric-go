@@ -4,14 +4,14 @@
 
 Learn more about the Vemetric Go SDK in the [official docs](https://vemetric.com/docs/sdks/go).
 
-You can also checkout the package on the [Go Package Registry](https://pkg.go.dev/github.com/Vemetric/vemetric-go).
+You can also checkout the package on the [Go Package Registry](https://pkg.go.dev/github.com/vemetric/vemetric-go).
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/Vemetric/vemetric-go.svg)](https://pkg.go.dev/github.com/Vemetric/vemetric-go)
+[![Go Reference](https://pkg.go.dev/badge/github.com/vemetric/vemetric-go.svg)](https://pkg.go.dev/github.com/vemetric/vemetric-go)
 
 ## Installation
 
 ```bash
-go get github.com/Vemetric/vemetric-go
+go get github.com/vemetric/vemetric-go
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/Vemetric/vemetric-go"
+	"github.com/vemetric/vemetric-go"
 )
 
 func main() {
