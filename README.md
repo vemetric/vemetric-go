@@ -1,4 +1,5 @@
-![Vemetric Go SDK](https://github.com/user-attachments/assets/2111bb87-9a4b-4325-8793-df45dede1e6e)
+![Vemetric Go SDK](https://github.com/user-attachments/assets/dfaf4210-c4ea-433a-84ac-48d5807034cc)
+
 
 # The Vemetric SDK for Go
 
