@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-var version = "0.0.11" // This gets changed automatically during the release process
+var version = "0.0.12" // This gets changed automatically during the release process
 
 type request struct {
 	ctx  context.Context
