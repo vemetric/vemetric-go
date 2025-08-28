@@ -22,6 +22,7 @@ type request struct {
 type Client interface {
 	TrackEvent(ctx context.Context, opts *TrackEventOpts) error
 	UpdateUser(ctx context.Context, opts *UpdateUserOpts) error
+	Close()
 }
 
 type client struct {
