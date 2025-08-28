@@ -19,6 +19,11 @@ type request struct {
 	body any
 }
 
+type Client interface {
+	TrackEvent(ctx context.Context, opts *TrackEventOpts) error
+	UpdateUser(ctx context.Context, opts *UpdateUserOpts) error
+}
+
 type client struct {
 	token string
 	host  string
@@ -47,7 +52,7 @@ var (
 )
 
 // New returns a new Vemetric client.
-func New(o *Opts) (*client, error) {
+func New(o *Opts) (Client, error) {
 	if o == nil || o.Token == "" {
 		return nil, errors.New("vemetric: Token required")
 	}
@@ -86,7 +91,7 @@ func New(o *Opts) (*client, error) {
 	return c, nil
 }
 
-// Tracks a custom event for the user with the given identifier.
+// TrackEvent tracks a custom event for the user with the given identifier.
 func (c *client) TrackEvent(ctx context.Context, opts *TrackEventOpts) error {
 	if opts == nil || opts.EventName == "" {
 		return errors.New("vemetric: event name required")
@@ -101,7 +106,7 @@ func (c *client) TrackEvent(ctx context.Context, opts *TrackEventOpts) error {
 	return nil
 }
 
-// Updates the data of the user with the given identifier.
+// UpdateUser updates the data of the user with the given identifier.
 func (c *client) UpdateUser(ctx context.Context, opts *UpdateUserOpts) error {
 	if opts == nil || opts.UserIdentifier == "" {
 		return errors.New("vemetric: user identifier required")
