@@ -9,57 +9,131 @@ import (
 )
 
 func TestNew(t *testing.T) {
+	type args struct {
+		token string
+		opts  []ClientOption
+	}
+
 	tests := []struct {
-		name    string
-		opts    *Opts
-		wantErr bool
+		name        string
+		args        args
+		wantErr     bool
+		wantToken   string
+		wantHost    string
+		wantTimeout time.Duration
+		wantAsync   bool
 	}{
 		{
-			name: "valid options",
-			opts: &Opts{
-				Token: "test-token",
+			name: "valid default options",
+			args: args{
+				token: "test-token",
 			},
-			wantErr: false,
-		},
-		{
-			name:    "nil options",
-			opts:    nil,
-			wantErr: true,
+			wantErr:     false,
+			wantToken:   "test-token",
+			wantHost:    "https://hub.vemetric.com",
+			wantTimeout: 3 * time.Second,
+			wantAsync:   false,
 		},
 		{
 			name: "empty token",
-			opts: &Opts{
-				Token: "",
+			args: args{
+				token: "",
 			},
 			wantErr: true,
 		},
 		{
 			name: "custom host",
-			opts: &Opts{
-				Token: "test-token",
-				Host:  "https://custom.host",
+			args: args{
+				token: "test-token",
+				opts:  []ClientOption{WithHost("https://custom.host")},
 			},
-			wantErr: false,
+			wantErr:     false,
+			wantToken:   "test-token",
+			wantHost:    "https://custom.host",
+			wantTimeout: 3 * time.Second,
+			wantAsync:   false,
 		},
 		{
 			name: "custom timeout",
-			opts: &Opts{
-				Token:   "test-token",
-				Timeout: 5 * time.Second,
+			args: args{
+				token: "test-token",
+				opts:  []ClientOption{WithHTTPClient(&http.Client{Timeout: 5 * time.Second})},
 			},
-			wantErr: false,
+			wantErr:     false,
+			wantToken:   "test-token",
+			wantHost:    "https://hub.vemetric.com",
+			wantTimeout: 5 * time.Second,
+			wantAsync:   false,
+		},
+		{
+			name: "async",
+			args: args{
+				token: "test-token",
+				opts:  []ClientOption{UseAsync()},
+			},
+			wantErr:     false,
+			wantToken:   "test-token",
+			wantHost:    "https://hub.vemetric.com",
+			wantTimeout: 3 * time.Second,
+			wantAsync:   true,
+		},
+		{
+			name: "async with zero channel size",
+			args: args{
+				token: "test-token",
+				opts:  []ClientOption{UseAsync(), WithAsyncBufferedChannelSize(0)},
+			},
+			wantErr: true,
+		},
+		{
+			name: "combine multiple options",
+			args: args{
+				token: "test-token",
+				opts: []ClientOption{
+					WithHost("https://custom.host"),
+					WithHTTPClient(&http.Client{Timeout: 5 * time.Second}),
+					UseAsync(),
+					WithAsyncBufferedChannelSize(5),
+				},
+			},
+			wantErr:     false,
+			wantToken:   "test-token",
+			wantHost:    "https://custom.host",
+			wantTimeout: 5 * time.Second,
+			wantAsync:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := New(tt.opts)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
+			vemetricClient, err := New(tt.args.token, tt.args.opts...)
+			gotErr := err != nil
+
+			if tt.wantErr {
+				if !gotErr {
+					t.Errorf("New() error = %v, wantErr %v", err, tt.wantErr)
+				}
 				return
 			}
-			if !tt.wantErr && client == nil {
-				t.Error("New() returned nil client when no error expected")
+
+			if gotErr {
+				t.Error("Expected no error, got", err)
+				return
+			}
+
+			actualClient := vemetricClient.(*client)
+
+			if actualClient.token != tt.wantToken {
+				t.Errorf("New() token = %v, want %v", actualClient.token, tt.args.token)
+			}
+			if actualClient.host != tt.wantHost {
+				t.Errorf("New() host = %v, want %v", actualClient.host, tt.wantHost)
+			}
+			if actualClient.hc.(*http.Client).Timeout != tt.wantTimeout {
+				t.Errorf("New() timeout = %v, want %v", actualClient.hc.(*http.Client).Timeout, tt.wantTimeout)
+			}
+			if actualClient.async != tt.wantAsync {
+				t.Errorf("New() async = %v, want %v", actualClient.async, tt.wantAsync)
 			}
 		})
 	}
@@ -87,10 +161,7 @@ func TestTrackEvent(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := New(&Opts{
-		Token: "test-token",
-		Host:  server.URL,
-	})
+	client, err := New("test-token", WithHost(server.URL))
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
@@ -112,8 +183,8 @@ func TestTrackEvent(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "nil options",
-			opts: nil,
+			name:    "nil options",
+			opts:    nil,
 			wantErr: true,
 		},
 		{
@@ -158,10 +229,7 @@ func TestUpdateUser(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := New(&Opts{
-		Token: "test-token",
-		Host:  server.URL,
-	})
+	client, err := New("test-token", WithHost(server.URL))
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
@@ -216,10 +284,7 @@ func TestContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	client, err := New(&Opts{
-		Token:   "test-token",
-		Host:    server.URL,
-	})
+	client, err := New("test-token", WithHost(server.URL))
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
@@ -235,4 +300,4 @@ func TestContextCancellation(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error due to cancelled context, got nil")
 	}
-} 
+}

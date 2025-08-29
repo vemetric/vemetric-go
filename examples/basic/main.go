@@ -8,10 +8,11 @@ import (
 )
 
 func main() {
-	client, err := vemetric.New(&vemetric.Opts{
-		Token: "o1rySsGlUtFCyflo",
-		Host: "http://localhost:4004", // Host is optional. If not provided, defaults to "https://hub.vemetric.com"
-	})
+	client, err := vemetric.New(
+		"o1rySsGlUtFCyflo",
+		// Host is optional. If not provided, defaults to "https://hub.vemetric.com"
+		vemetric.WithHost("http://localhost:4004"),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,7 +21,7 @@ func main() {
 
 	// Track an event
 	err = client.TrackEvent(ctx, &vemetric.TrackEventOpts{
-		EventName: "SignupCompleted",
+		EventName:      "SignupCompleted",
 		UserIdentifier: "dmmIrnzUzVMJD03tjCiHXTEEgX6xIPJm",
 		EventData: map[string]any{
 			"plan": "Pro",
