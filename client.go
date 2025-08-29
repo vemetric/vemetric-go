@@ -25,63 +25,97 @@ type Client interface {
 	Close()
 }
 
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 type client struct {
 	token string
 	host  string
-	hc    *http.Client
+	hc    HTTPClient
 	async bool
 	q     chan request
 	wg    sync.WaitGroup
 }
 
-// Configuration options for the Vemetric Client.
-type Opts struct {
-	// Required. This is the token of your project. You can find it in the Settings page.
-	Token string
+// ClientOptions holds the configuration options for the Vemetric Client.
+type ClientOptions struct {
 	// Host is optional. If not provided, defaults to "https://hub.vemetric.com"
 	Host string
-	// Default timeout is 3 seconds.
-	Timeout time.Duration
+	// The HTTP client to use for requests. If not provided, it defaults to a http.Client with a 3 second timeout.
+	HttpClient HTTPClient
 	// Default is false.
 	Async bool
 	// Default is 10. Async buffered channel size
-	AsyncBufferedChannelSize int
+	AsyncBufferedChannelSize uint
 }
+
+type ClientOption func(*ClientOptions)
 
 var (
 	ErrBadStatus = errors.New("vemetric: non-2xx status code")
 )
 
+// WithHost sets the host for the Vemetric Client. Defaults to "https://hub.vemetric.com"
+func WithHost(host string) ClientOption {
+	return func(opts *ClientOptions) {
+		opts.Host = host
+	}
+}
+
+// WithHTTPClient sets the HTTP client to use for sending requests to Vemetric. Defaults to a http.Client with a
+// 3 second timeout.
+func WithHTTPClient(hc HTTPClient) ClientOption {
+	return func(opts *ClientOptions) {
+		opts.HttpClient = hc
+	}
+}
+
+// UseAsync sets the client to use asynchronous requests. Defaults to false.
+func UseAsync() ClientOption {
+	return func(opts *ClientOptions) {
+		opts.Async = true
+	}
+}
+
+// WithAsyncBufferedChannelSize sets the size of the buffered channel for asynchronous requests. Defaults to 10.
+// Only applies if UseAsync() is used.
+func WithAsyncBufferedChannelSize(size uint) ClientOption {
+	return func(opts *ClientOptions) {
+		opts.AsyncBufferedChannelSize = size
+	}
+}
+
 // New returns a new Vemetric client.
-func New(o *Opts) (Client, error) {
-	if o == nil || o.Token == "" {
+func New(token string, opts ...ClientOption) (Client, error) {
+	if token == "" {
 		return nil, errors.New("vemetric: Token required")
 	}
 
-	host := "https://hub.vemetric.com"
-	if o.Host != "" {
-		host = o.Host
+	httpClient := &http.Client{Timeout: 3 * time.Second}
+
+	// initialize options with defaults
+	options := &ClientOptions{
+		Host:                     "https://hub.vemetric.com",
+		HttpClient:               httpClient,
+		Async:                    false,
+		AsyncBufferedChannelSize: 10,
 	}
 
-	timeout := 3 * time.Second
-	if o.Timeout > 0 {
-		timeout = o.Timeout
+	for _, opt := range opts {
+		opt(options)
 	}
 
-	asyncBufferedChannelSize := o.AsyncBufferedChannelSize
-
-	if o.Async && asyncBufferedChannelSize == 0 {
-		asyncBufferedChannelSize = 10
+	if options.Async && options.AsyncBufferedChannelSize == 0 {
+		return nil, errors.New("vemetric: AsyncBufferedChannelSize must be greater than 0")
 	}
 
 	c := &client{
-		token: o.Token,
-		host:  host,
-		hc: &http.Client{
-			Timeout: timeout,
-		},
-		async: o.Async,
-		q:     make(chan request, asyncBufferedChannelSize),
+		token: token,
+		host:  options.Host,
+		hc:    options.HttpClient,
+		async: options.Async,
+		q:     make(chan request, options.AsyncBufferedChannelSize),
 		wg:    sync.WaitGroup{},
 	}
 
@@ -150,7 +184,7 @@ func (c *client) post(ctx context.Context, path string, body any) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 
 	if res.StatusCode >= 300 {
 		return fmt.Errorf("%w: %s", ErrBadStatus, res.Status)
