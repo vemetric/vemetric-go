@@ -176,6 +176,7 @@ func TestTrackEvent(t *testing.T) {
 			opts: &TrackEventOpts{
 				EventName:      "test-event",
 				UserIdentifier: "user123",
+				UserDisplayName: "John Doe",
 				EventData: map[string]any{
 					"key": "value",
 				},

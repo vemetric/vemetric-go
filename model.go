@@ -1,17 +1,19 @@
 package vemetric
 
 type TrackEventOpts struct {
-	EventName      string                 `json:"name"`
-	UserIdentifier string                 `json:"userIdentifier,omitempty"`
+	EventName       string                 `json:"name"`
+	UserIdentifier  string                 `json:"userIdentifier,omitempty"`
+	UserDisplayName string                 `json:"displayName,omitempty"`
 	// A map of key-value pairs to set on the event.
-	EventData      map[string]any         `json:"customData,omitempty"`
+	EventData       map[string]any         `json:"customData,omitempty"`
 	// Lets you set data on the user while tracking an event.
-	UserData       UserData               `json:"userData,omitempty"`
+	UserData        UserData               `json:"userData,omitempty"`
 }
 
 type UpdateUserOpts struct {
-	UserIdentifier string         `json:"userIdentifier"`
-	UserData       UserData       `json:"data,omitempty"`
+	UserIdentifier  string         `json:"userIdentifier"`
+	UserDisplayName string         `json:"displayName,omitempty"`
+	UserData        UserData       `json:"data,omitempty"`
 }
 
 type UserData struct {

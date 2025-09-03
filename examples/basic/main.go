@@ -23,6 +23,7 @@ func main() {
 	err = client.TrackEvent(ctx, &vemetric.TrackEventOpts{
 		EventName:      "SignupCompleted",
 		UserIdentifier: "dmmIrnzUzVMJD03tjCiHXTEEgX6xIPJm",
+		UserDisplayName: "TestName",
 		EventData: map[string]any{
 			"plan": "Pro",
 		},

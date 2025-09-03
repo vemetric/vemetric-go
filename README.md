@@ -1,6 +1,5 @@
 ![Vemetric Go SDK](https://github.com/user-attachments/assets/dfaf4210-c4ea-433a-84ac-48d5807034cc)
 
-
 # The Vemetric SDK for Go
 
 Learn more about the Vemetric Go SDK in the [official docs](https://vemetric.com/docs/sdks/go).
@@ -39,6 +38,7 @@ func main() {
 	err = client.TrackEvent(ctx, &vemetric.TrackEventOpts{
 		EventName: "SignupCompleted",
 		UserIdentifier: "user-id",
+		UserDisplayName: "John Doe",
 		EventData: map[string]any{
 			"key": "value",
 		},
@@ -90,7 +90,7 @@ retryClient := retryablehttp.NewClient()
 retryClient.RetryMax = 3
 
 // default retry policy:
-// retry requests in case of network issues, SSL certificate errors, 
+// retry requests in case of network issues, SSL certificate errors,
 // 429 Too Many Requests, or any of the 500-range response errors
 retryClient.CheckRetry = retryablehttp.DefaultRetryPolicy
 
