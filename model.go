@@ -14,6 +14,7 @@ type UpdateUserOpts struct {
 	UserIdentifier  string         `json:"userIdentifier"`
 	UserDisplayName string         `json:"displayName,omitempty"`
 	UserData        UserData       `json:"data,omitempty"`
+	UserAvatarUrl   string         `json:"avatarUrl,omitempty"`
 }
 
 type UserData struct {
